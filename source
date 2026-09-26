@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperTrade</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0b0e13;
+      color: #e8edf5;
+      font-family: Arial, sans-serif;
+    }
+
+    button, select, input {
+      font: inherit;
+    }
+
+    .topbar {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 18px;
+      border-bottom: 1px solid #202631;
+      background: #10141b;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      margin-right: 10px;
+    }
+
+    .symbol {
+      background: #181e27;
+      border: 1px solid #29313d;
+      color: white;
+      padding: 9px 12px;
+      border-radius: 7px;
+    }
+
+    .price {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .change {
+      color: #35d07f;
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      min-height: calc(100vh - 58px);
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .toolbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      border-bottom: 1px solid #202631;
+      overflow-x: auto;
+    }
+
+    .tool {
+      border: 0;
+      background: transparent;
+      color: #9da7b6;
+      padding: 7px 9px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .tool:hover,
+    .tool.active {
+      background: #202733;
+      color: white;
+    }
+
+    .chart {
+      height: 510px;
+      position: relative;
+      border-bottom: 1px solid #202631;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 60px 50px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .chart-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: #8994a5;
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .watchlist {
+      border-left: 1px solid #202631;
+      background: #10141b;
+    }
+
+    .panel-title {
+      padding: 16px;
+      font-weight: 700;
+      border-bottom: 1px solid #202631;
+    }
+
+    .asset {
+      display: flex;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 1px solid #1c222c;
+      cursor: pointer;
+    }
+
+    .asset:hover {
+      background: #171d26;
+    }
+
+    .asset-name {
+      font-weight: 700;
+    }
+
+    .asset-sub {
+      color: #788496;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .asset-price {
+      text-align: right;
+    }
+
+    .green {
+      color: #35d07f;
+    }
+
+    .red {
+      color: #ff5f6d;
+    }
+
+    .order-panel {
+      padding: 16px;
+      border-bottom: 1px solid #202631;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      flex: 1;
+      border: 0;
+      padding: 9px;
+      border-radius: 6px;
+      background: #1a2029;
+      color: #aab4c2;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #293241;
+      color: white;
+    }
+
+    .field {
+      margin-bottom: 11px;
+    }
+
+    .field label {
+      display: block;
+      color: #7f8a9b;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 10px;
+      background: #181e27;
+      border: 1px solid #29313d;
+      border-radius: 6px;
+      color: white;
+      outline: none;
+    }
+
+    .order-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .buy,
+    .sell {
+      border: 0;
+      color: white;
+      padding: 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .buy {
+      background: #168f59;
+    }
+
+    .sell {
+      background: #bd3e4b;
+    }
+
+    .buy:hover {
+      background: #1ba768;
+    }
+
+    .sell:hover {
+      background: #d24957;
+    }
+
+    .bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid #202631;
+    }
+
+    .section {
+      padding: 15px;
+      min-height: 180px;
+    }
+
+    .section + .section {
+      border-left: 1px solid #202631;
+    }
+
+    .section h3 {
+      margin: 0 0 12px;
+      font-size: 14px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      color: #a6afbd;
+      border-bottom: 1px solid #1c222c;
+    }
+
+    .stat strong {
+      color: white;
+    }
+
+    .position {
+      background: #151b23;
+      border: 1px solid #252e3a;
+      border-radius: 7px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .position-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .empty {
+      color: #687587;
+      font-size: 13px;
+      padding-top: 8px;
+    }
+
+    @media (max-width: 850px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .watchlist {
+        border-left: 0;
+        border-top: 1px solid #202631;
+      }
+
+      .chart {
+        height: 400px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .section + .section {
+        border-left: 0;
+        border-top: 1px solid #202631;
+      }
+
+      .logo {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="logo">PaperTrade</div>
+
+  <select class="symbol" id="symbol">
+    <option>BTC/USD</option>
+    <option>ETH/USD</option>
+    <option>SOL/USD</option>
+    <option>AAPL</option>
+    <option>TSLA</option>
+  </select>
+
+  <div class="price" id="price">$100,000.00</div>
+  <div class="change" id="change">+0.00%</div>
+</header>
+
+<div class="layout">
+
+  <main class="main">
+
+    <div class="toolbar">
+      <button class="tool active">1m</button>
+      <button class="tool">5m</button>
+      <button class="tool">15m</button>
+      <button class="tool">1H</button>
+      <button class="tool">4H</button>
+      <button class="tool">1D</button>
+
+      <button class="tool">Candles</button>
+      <button class="tool">Line</button>
+      <button class="tool">Indicators</button>
+      <button class="tool">Compare</button>
+    </div>
+
+    <div class="chart">
+      <div class="chart-label">
+        BTC/USD · Paper Trading
+      </div>
+
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="bottom">
+
+      <section class="section">
+        <h3>Account</h3>
+
+        <div class="stat">
+          <span>Balance</span>
+          <strong id="balance">$100,000.00</strong>
+        </div>
+
+        <div class="stat">
+          <span>Equity</span>
+          <strong id="equity">$100,000.00</strong>
+        </div>
+
+        <div class="stat">
+          <span>Buying Power</span>
+          <strong id="buyingPower">$100,000.00</strong>
+        </div>
+
+        <div class="stat">
+          <span>Today's P/L</span>
+          <strong id="pnl">$0.00</strong>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Positions</h3>
+
+        <div id="positions">
+          <div class="empty">
+            No open positions.
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <aside class="watchlist">
+
+    <div class="panel-title">
+      Watchlist
+    </div>
+
+    <div class="asset">
+      <div>
+        <div class="asset-name">BTC/USD</div>
+        <div class="asset-sub">Bitcoin</div>
+      </div>
+
+      <div class="asset-price">
+        <div>$100,000</div>
+        <div class="green">+1.24%</div>
+      </div>
+    </div>
+
+    <div class="asset">
+      <div>
+        <div class="asset-name">ETH/USD</div>
+        <div class="asset-sub">Ethereum</div>
+      </div>
+
+      <div class="asset-price">
+        <div>$3,400</div>
+        <div class="green">+0.82%</div>
+      </div>
+    </div>
+
+    <div class="asset">
+      <div>
+        <div class="asset-name">SOL/USD</div>
+        <div class="asset-sub">Solana</div>
+      </div>
+
+      <div class="asset-price">
+        <div>$210</div>
+        <div class="red">-0.42%</div>
+      </div>
+    </div>
+
+    <div class="asset">
+      <div>
+        <div class="asset-name">AAPL</div>
+        <div class="asset-sub">Apple</div>
+      </div>
+
+      <div class="asset-price">
+        <div>$230</div>
+        <div class="green">+0.51%</div>
+      </div>
+    </div>
+
+    <div class="order-panel">
+
+      <div class="tabs">
+        <button class="tab active">Market</button>
+        <button class="tab">Limit</button>
+        <button class="tab">Stop</button>
+      </div>
+
+      <div class="field">
+        <label>Quantity</label>
+        <input id="quantity" type="number" value="0.01" min="0.0001" step="0.0001">
+      </div>
+
+      <div class="field">
+        <label>Order value</label>
+        <input id="orderValue" type="number" value="1000" min="1">
+      </div>
+
+      <div class="order-buttons">
+        <button class="buy" id="buy">Buy</button>
+        <button class="sell" id="sell">Sell</button>
+      </div>
+
+    </div>
+
+  </aside>
+
+</div>
+
+<script>
+  const canvas = document.getElementById("chart");
+  const ctx = canvas.getContext("2d");
+
+  const priceEl = document.getElementById("price");
+  const changeEl = document.getElementById("change");
+
+  const balanceEl = document.getElementById("balance");
+  const equityEl = document.getElementById("equity");
+  const buyingPowerEl = document.getElementById("buyingPower");
+  const pnlEl = document.getElementById("pnl");
+
+  const positionsEl = document.getElementById("positions");
+
+  let price = 100000;
+  let startingPrice = price;
+
+  let balance = 100000;
+  let position = 0;
+  let averageEntry = 0;
+
+  const history = [];
+
+  for (let i = 0; i < 80; i++) {
+    price += (Math.random() - 0.5) * 600;
+    history.push(price);
+  }
+
+  function money(value) {
+    return "$" + value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * devicePixelRatio;
+    canvas.height = rect.height * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    drawChart();
+  }
+
+  function drawChart() {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    ctx.clearRect(0, 0, width, height);
+
+    const min = Math.min(...history) - 500;
+    const max = Math.max(...history) + 500;
+
+    ctx.beginPath();
+
+    history.forEach((value, index) => {
+      const x = (index / (history.length - 1)) * width;
+      const y = height - ((value - min) / (max - min)) * (height - 35) - 15;
+
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+
+    ctx.strokeStyle = "#4aa3ff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#8490a1";
+    ctx.font = "12px Arial";
+    ctx.fillText(money(max), 10, 18);
+    ctx.fillText(money(min), 10, height - 8);
+  }
+
+  function updateAccount() {
+    const unrealized = position * (price - averageEntry);
+    const equity = balance + position * price;
+
+    balanceEl.textContent = money(balance);
+    equityEl.textContent = money(equity);
+    buyingPowerEl.textContent = money(balance);
+
+    pnlEl.textContent = money(unrealized);
+
+    if (unrealized >= 0) {
+      pnlEl.className = "green";
+    } else {
+      pnlEl.className = "red";
+    }
+
+    if (position === 0) {
+      positionsEl.innerHTML =
+        '<div class="empty">No open positions.</div>';
+    } else {
+      positionsEl.innerHTML = `
+        <div class="position">
+          <div class="position-row">
+            <strong>BTC/USD</strong>
+            <strong>${position.toFixed(4)}</strong>
+          </div>
+
+          <div class="position-row">
+            <span>Entry</span>
+            <span>${money(averageEntry)}</span>
+          </div>
+
+          <div class="position-row">
+            <span>Current</span>
+            <span>${money(price)}</span>
+          </div>
+
+          <div class="position-row">
+            <span>P/L</span>
+            <strong class="${unrealized >= 0 ? "green" : "red"}">
+              ${money(unrealized)}
+            </strong>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  function updateMarket() {
+    const movement = (Math.random() - 0.48) * 120;
+    price += movement;
+
+    history.push(price);
+
+    if (history.length > 100) {
+      history.shift();
+    }
+
+    const change =
+      ((price - startingPrice) / startingPrice) * 100;
+
+    priceEl.textContent = money(price);
+
+    changeEl.textContent =
+      (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+
+    changeEl.className =
+      change >= 0 ? "change green" : "change red";
+
+    drawChart();
+    updateAccount();
+  }
+
+  document.getElementById("buy").addEventListener("click", () => {
+    const quantity =
+      Number(document.getElementById("quantity").value);
+
+    if (!quantity || quantity <= 0) return;
+
+    const cost = quantity * price;
+
+    if (cost > balance) {
+      alert("Not enough paper buying power.");
+      return;
+    }
+
+    const oldPosition = position;
+
+    balance -= cost;
+
+    position += quantity;
+
+    if (oldPosition === 0) {
+      averageEntry = price;
+    } else {
+      averageEntry =
+        ((averageEntry * oldPosition) + (price * quantity))
+        / position;
+    }
+
+    updateAccount();
+  });
+
+  document.getElementById("sell").addEventListener("click", () => {
+    const quantity =
+      Number(document.getElementById("quantity").value);
+
+    if (!quantity || quantity <= 0) return;
+
+    if (quantity > position) {
+      alert("You don't have enough of this paper position.");
+      return;
+    }
+
+    balance += quantity * price;
+    position -= quantity;
+
+    if (position === 0) {
+      averageEntry = 0;
+    }
+
+    updateAccount();
+  });
+
+  document.querySelectorAll(".tool").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".tool")
+        .forEach(b => b.classList.remove("active"));
+
+      button.classList.add("active");
+    });
+  });
+
+  window.addEventListener("resize", resizeCanvas);
+
+  resizeCanvas();
+  updateAccount();
+
+  // Simulated market movement.
+  // This is NOT real financial-market data.
+  setInterval(updateMarket, 1000);
+</script>
+
+</body>
+</html>
